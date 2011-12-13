@@ -1,6 +1,6 @@
 # Swpnav
 
-[Path](https://path.com/) and [Facebook](http://facebook.com/) like navigation brought you web site.  
+[Path](https://path.com/) and [Facebook](http://facebook.com/) like navigation brought you web site for iOS and Android devices.  
 Here's a [demo site](http://5509.me/sample/Swpnav/).
 
 ## usage
