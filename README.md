@@ -1,6 +1,6 @@
 # Swpnav
 
-[Path](https://path.com/) and [Facebook](http://facebook.com/) like navigation brought you web site for iOS and Android devices.  
+[Path](https://path.com/) and [Facebook](http://facebook.com/) like navigation brought your web site for iOS and Android devices.  
 Here's a [demo site](http://5509.me/sample/Swpnav/).
 
 ## usage
@@ -43,3 +43,8 @@ with
 	    swp.open();
 	  }
 	}, false);
+
+## devices
+
+* iPhone3G, 3GS, 4, 4S (iOS3.2 or higher
+* Android (touchmove is buggy
