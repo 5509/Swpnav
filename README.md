@@ -1,6 +1,7 @@
 # Swpnav
 
-Path and Facebook like navigation brought you web site.
+[Path](https://path.com/) and [Facebook](http://facebook.com/) like navigation brought you web site.  
+Here's a [demo site](http://5509.me/sample/Swpnav/).
 
 ## usage
 
