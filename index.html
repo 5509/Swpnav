@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>swpnav</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+
+<div id="content">
+	<nav>
+		<ul>
+			<li><a href="#open" id="open">Open</a></li>
+		</ul>
+	</nav>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+	<p>hogehoge</p>
+</div>
+
+<nav id="nav">
+	<ul>
+		<li><a href="#">menu 1</a></li>
+		<li><a href="#">menu 2</a></li>
+		<li><a href="#">menu 3</a></li>
+		<li><a href="#">menu 4</a></li>
+		<li><a href="#">menu 5</a></li>
+	</ul>
+</nav>
+
+<script src="swpnav.js"></script>
+<script>
+	var open = document.getElementById('open');
+		swp = Swpnav('#content', '#nav');
+
+	open.addEventListener('click', function(ev) {
+		ev.preventDefault();
+
+		if ( swp.state ) {
+			swp.close();
+		} else {
+			swp.open();
+		}
+	}, false);
+</script>
+
+</body>
+</html>
