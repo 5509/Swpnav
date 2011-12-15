@@ -5,6 +5,23 @@
 	<title>swpnav</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 	<link rel="stylesheet" href="styles/styles.css">
+	<style>
+		.flipsnap {
+			display: -webkit-box;
+			margin: 10px 0;
+		}
+		.item {
+			margin: 0 10px;
+			width: 50px;
+			height: 50px;
+			border: 5px solid #000;
+			text-align: center;
+			vertical-align: middle;
+			font-size: 20px;
+			line-height: 50px;
+			color: #999;
+		}
+	</style>
 </head>
 <body>
 
@@ -18,6 +35,22 @@
 	</header>
 
 	<div class="main">
+		<section id="ex">
+			<h2>This is flipsnap</h2>
+			<div class="flipsnap small" id="flipsnap">
+				<div class="item">1</div>
+				<div class="item">2</div>
+				<div class="item">3</div>
+				<div class="item">4</div>
+				<div class="item">5</div>
+				<div class="item">6</div>
+				<div class="item">7</div>
+				<div class="item">8</div>
+				<div class="item">9</div>
+				<div class="item">10</div>
+			</div>
+		</section>
+
 		<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce augue nulla, rhoncus sed faucibus sit amet, sagittis at metus. Mauris tristique dui eget turpis interdum ultricies. Donec volutpat, velit a congue convallis, nisi est ultricies tortor, sed pretium eros enim nec lorem. Pellentesque iaculis, felis ac interdum tincidunt, tortor lacus ultrices nisl, ut porta magna enim eu nunc. Cras nec vehicula arcu. Nunc bibendum, quam eu dignissim posuere, orci est sodales ante, non rhoncus tortor lorem nec ante. Donec tellus urna, porta eget tincidunt id, elementum quis sapien. Curabitur cursus, libero in mollis feugiat, augue ante laoreet massa, a consequat orci orci a diam. Pellentesque condimentum, libero a mattis suscipit, ipsum ante feugiat neque, sed pellentesque tellus mi vel nisi. Fusce sit amet adipiscing tellus.</p>
 		<p>Fusce tellus purus, porttitor eu porta ac, suscipit ac nunc. Morbi sed eros ac diam egestas consectetur sit amet eget purus. Phasellus mattis diam ut mi eleifend varius. Suspendisse potenti. Mauris nec venenatis ligula. Suspendisse nisi sem, ultrices eu euismod quis, tempus in est. Sed ac turpis quam, et facilisis justo. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Cras aliquet, felis ac gravida cursus, arcu nisl tempus lacus, eget suscipit diam lacus in ante. Sed dui elit, pulvinar sed vehicula non, tristique in velit. Duis nec sem nec risus venenatis commodo in a felis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Duis lacinia purus ac dolor viverra vitae scelerisque urna luctus. Vivamus ornare quam id ante consequat eu egestas justo egestas. Cras lacinia nibh at quam venenatis mollis. Quisque facilisis, leo vitae rutrum lobortis, nibh elit volutpat nisl, scelerisque viverra velit ipsum facilisis lectus.</p>
 		<p>Sed vitae orci et orci venenatis condimentum ac in erat. Pellentesque vel porta neque. In hac habitasse platea dictumst. Nunc in varius velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vestibulum a nulla lacus, quis blandit nunc. Suspendisse in sollicitudin diam. Morbi posuere mi non nunc semper volutpat. In id massa vitae sapien eleifend pellentesque eget id tellus. Ut ultricies risus sed dui fermentum elementum. Suspendisse bibendum turpis et metus lobortis elementum. Morbi eu enim non neque cursus dignissim a non lacus.</p>
@@ -38,6 +71,7 @@
 </nav>
 
 <script src="swpnav.js"></script>
+<script src="scripts/flipsnap.js"></script>
 <script>
 	var open = document.getElementById('open'),
 		swp = Swpnav('#content', '#nav');
@@ -51,6 +85,12 @@
 			swp.open();
 		}
 	}, false);
+
+	// flipsnap
+    Flipsnap("#flipsnap", {
+        distance: 160,
+        point: 3
+    });
 </script>
 
 </body>
