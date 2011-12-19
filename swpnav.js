@@ -1,24 +1,23 @@
 /**
  * Swpnav
  *
- * @version      0.1
+ * @version      0.2.0
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/Swpnav
  *
- * 2011-12-13 17:40
+ * 2011-12-19 04:30
  */
 ;(function(window, document, undefined) {
 
-var document = window.document,
-	support = {
-		translate3d: ('WebKitCSSMatrix' in window && 'm11' in new WebKitCSSMatrix()),
-		touch: ('ontouchstart' in window)
-	},
-	touchStartEvent =  support.touch ? 'touchstart' : 'mousedown',
-	touchMoveEvent =  support.touch ? 'touchmove' : 'mousemove',
-	touchEndEvent =  support.touch ? 'touchend' : 'mouseup';
+	var support = {
+			translate3d: ('WebKitCSSMatrix' in window && 'm11' in new WebKitCSSMatrix()),
+			touch: ('ontouchstart' in window)
+		},
+		touch_start_event = support.touch ? 'touchstart' : 'mousedown',
+		touch_move_event = support.touch ? 'touchmove' : 'mousemove',
+		touch_end_event = support.touch ? 'touchend' : 'mouseup';
 
 	var Swpnav = function(content, nav, conf) {
 		if ( this instanceof Swpnav ) {
@@ -37,6 +36,11 @@ var document = window.document,
 			self.content = document.querySelector(content);
 			self.nav = document.querySelector(nav);
 			self.state = false; // true: open, false: close
+			self.touch_enabled = true;
+			self.current_point = 0;
+			self.current_x = 0;
+			self.max_x = self.content.offsetWidth;
+
 			self.slide_disable = {
 				ppp: undefined,
 				pp: undefined,
@@ -64,7 +68,7 @@ var document = window.document,
 
 			self.conf = simple_extend({
 				slide: 260,
-				duration: '0.3s',
+				duration: '0.2s',
 				timingFunction: 'cubic-bezier(0,0,0.25,1)'
 			}, conf || {});
 
@@ -77,9 +81,9 @@ var document = window.document,
 
 			self.ms_duration = parseFloat(self.conf.duration) * 1000;
 
-			self.content.addEventListener(touchStartEvent, self, false);
-			self.content.addEventListener(touchMoveEvent, self, false);
-			self.content.addEventListener(touchEndEvent, self, false);
+			self.content.addEventListener(touch_start_event, self, false);
+			self.content.addEventListener(touch_move_event, self, false);
+			self.content.addEventListener(touch_end_event, self, false);
 
 			return self;
 		},
@@ -88,13 +92,13 @@ var document = window.document,
 			var self = this;
 
 			switch ( ev.type ) {
-			case touchStartEvent:
+			case touch_start_event:
 				self._touchstart(ev);
 				break;
-			case touchMoveEvent:
+			case touch_move_event:
 				self._touchmove(ev);
 				break;
-			case touchEndEvent:
+			case touch_end_event:
 				self._touchend(ev);
 				break;
 			case 'click':
@@ -106,127 +110,117 @@ var document = window.document,
 		_touchstart: function(ev) {
 			var self = this;
 
-			self.touchstart_time = +(new Date);
-			self.touchstart_flg = true;
-			self.touchmove_flg = false;
-			self.pos.start = {
-				x: getPage(ev, 'pageX'),
-				y: getPage(ev, 'pageY')
-			};
-		},
-
-		_touchmove: function(ev) {
-			var self = this,
-				diff = undefined,
-				time = undefined,
-				has_no_prev = self.pos.end,
-				slide_disable = self.slide_disable,
-				cond_a = undefined,
-				cond_b = undefined,
-				cond_c = undefined,
-				cond_d = undefined;
-
-			if ( !self.touchstart_flg ) return;
-
-			time = +(new Date);
-
-			// if first touchmove time ellapsed from first touch
-			// clear touchstart flg
-			if ( self.touchstart_flg
-			 && !self.touchmove_flg
-			 && (time - self.touchstart_time) > 200 ) {
-				self.touchstart_flg = false;
-				return;
-			}
-			self.touchmove_flg = true;
-
-			self.pos.prev = self.pos.end || self.pos.start;
-			self.pos.end = {
-				x: getPage(ev, 'pageX'),
-				y: getPage(ev, 'pageY')
-			};
-
-			if ( !has_no_prev ) return;
-
-			diff = {
-				x: self.pos.end.x - self.pos.prev.x,
-				y: self.pos.end.y - self.pos.prev.y
-			};
-
-			if ( !slide_disable.pp ) {
-				slide_disable.pp = diff;
-				return;
-			} else
-			if ( !slide_disable.p ) {
-				slide_disable.p = diff;
-				return;
-			} else
-			if ( !slide_disable.c ) {
-				slide_disable.c = diff;
-
-				cond_a = Math.abs(slide_disable.p.y - slide_disable.pp.y) > 1;
-				cond_b = Math.abs(slide_disable.c.y - slide_disable.p.y) > 1;
-				cond_c = Math.abs(slide_disable.c.y - slide_disable.pp.y) > 2;
-
-				if ( (cond_a && cond_b) || cond_c ) {
-					self.touchstart_flg = false;
-				}
+			if ( !self.touch_enabled ) {
 				return;
 			}
 
-			if ( diff.x > 2 ) {
+			if ( !support.touch ) {
 				ev.preventDefault();
 			}
 
-			// slide panel
-			self.pos.current.x = self.pos.current.x + diff.x;
-			if ( self.pos.current.x < 0 ) {
-				self.pos.current.x = 0;
+			self.scrolling = true;
+			self.move_ready = false;
+			self.start_page_x = get_page(ev, 'pageX');
+			self.start_page_y = get_page(ev, 'pageY');
+			self.base_page_x = self.start_page_x;
+			self.direction_x = 0;
+			self.start_time = ev.timeStamp;
+		},
+
+		_touchmove: function(ev) {
+
+			var self = this,
+				page_x = undefined,
+				page_y = undefined,
+				dist_x = undefined,
+				new_x = undefined,
+				delta_x = undefined,
+				delta_y = undefined;
+
+			if ( !self.scrolling ) {
+				return;
 			}
 
-			css(self.content, {
-				webkitTransform: translate(self.pos.current.x)
-			});
+			page_x = get_page(ev, 'pageX');
+			page_y = get_page(ev, 'pageY');
+
+			if ( self.move_ready ) {
+				ev.preventDefault();
+				ev.stopPropagation();
+
+				dist_x = page_x - self.base_page_x;
+				new_x = self.current_x + dist_x;
+				if ( new_x >= 0 ) {
+					new_x = Math.round(self.current_x + dist_x / 3);
+				}
+
+				if ( new_x < 0 ) {
+					new_x = 0;
+				}
+
+				self.current_x = new_x;
+				css(self.content, {
+					webkitTransform: translate(new_x)
+				});
+
+				self.direction_x = dist_x > 0 ? -1 : 1;
+			} else {
+				delta_x = Math.abs(page_x - self.start_page_x);
+				delta_y = Math.abs(page_y - self.start_page_y);
+				if ( delta_x > 5 ) {
+					ev.preventDefault();
+					ev.stopPropagation();
+					self.move_ready = true;
+
+					self.content.addEventListener('click', self, true);
+				} else
+				if ( delta_y > 5 ) {
+					self.scrolling = false;
+				}
+			}
+
+			self.base_page_x = page_x;
 		},
 
 		_touchend: function(ev) {
 			var self = this,
-				conf = self.conf,
-				x = self.pos.current.x,
-				cond_x = undefined,
-				cond_y = undefined,
-				cond = undefined;
+				conf = self.conf;
 
-			self.pos.end = self.pos.end || self.pos.start;
-			cond_x = (self.pos.end.x - self.pos.start.x) > 10;
-			cond_y = (self.pos.end.y - self.pos.start.y) > 10;
-			cond = !self.touchmove_flg && !cond_y && cond_x;
+			if ( !self.scrolling ) {
+				return;
+			}
 
-			if ( !self.touchmove_flg && self.state ) {
+			self.scrolling = false;
+
+			if ( !self.move_ready && self.state ) {
 				self.close();
 			} else
 			// if panel is closed
 			if ( !self.state ) {
-				if ( x > 50 || cond ) {
+				if ( self.current_x > 50 ) {
 					self.open();
 				} else {
 					self.close();
 				}
 			// else panel is opened
 			} else {
-				if ( x < (conf.slide - 50) || cond ) {
+				if ( self.current_x < (conf.slide - 50) ) {
 					self.close();
 				} else {
 					self.open();
 				}
 			}
 
-			self.slide_disable.pp = null;
-			self.slide_disable.p = null;
-			self.slide_disable.c = null;
-			self.pos.prev = null;
-			self.pos.end = null;
-			self.touchstart_flg = false;
+			setTimeout(function() {
+				self.content.removeEventListener('click', self, true);
+			}, 200);
+		},
+
+		_click: function(ev) {
+			var self = this;
+
+			ev.stopPropagation();
+			ev.preventDefault();
 		},
 
 		_setNoAnim: function(state) {
@@ -248,8 +242,8 @@ var document = window.document,
 				webkitTransitionDuration: conf.duration,
 				webkitTransform: translate(conf.slide)
 			});
-
-			self.pos.current.x = conf.slide;
+			
+			self.current_x = conf.slide;
 			self._setNoAnim(true);
 		},
 
@@ -262,16 +256,16 @@ var document = window.document,
 				webkitTransform: translate(0)
 			});
 
-			self.pos.current.x = 0;
+			self.current_x = 0;
 			self._setNoAnim(false);
 		},
 
 		destroy: function() {
 			var self = this;
 
-			self.content.removeEventListener(touchStartEvent, self, false);
-			self.content.removeEventListener(touchMoveEvent, self, false);
-			self.content.removeEventListener(touchEndEvent, self, false);
+			self.content.removeevListener(touchStartev, self);
+			self.content.removeevListener(touchMoveev, self);
+			self.content.removeevListener(touchEndev, self);
 		}
 	};
 
@@ -287,7 +281,7 @@ var document = window.document,
 			: 'translate(' + x + 'px, 0)';
 	}
 
-	function getPage(ev, page) {
+	function get_page(ev, page) {
 		return support.touch ? ev.changedTouches[0][page] : ev[page];
 	}
 
