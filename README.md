@@ -19,6 +19,7 @@ execution with options.
 	  slide: 230,
 	  duration: '0.5s',
 	  timingFunction: 'ease'
+	  trigger: 50
 	});
 
 ### with APIs
