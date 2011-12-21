@@ -1,13 +1,13 @@
 /**
  * Swpnav
  *
- * @version      0.2.0
+ * @version      0.2.1
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/Swpnav
  *
- * 2011-12-19 04:30
+ * 2011-12-21 12:44
  */
 ;(function(window, document, undefined) {
 
@@ -41,23 +41,6 @@
 			self.current_x = 0;
 			self.max_x = self.content.offsetWidth;
 
-			self.slide_disable = {
-				ppp: undefined,
-				pp: undefined,
-				p: undefined,
-				c: undefined
-			};
-
-			self.pos = {
-				current: {
-					x: 0,
-					y: 0
-				},
-				start: undefined,
-				prev: undefined,
-				end: undefined
-			};
-
 			content_style = getComputedStyle(self.content);
 
 			css(self.nav, {
@@ -69,7 +52,8 @@
 			self.conf = simple_extend({
 				slide: 260,
 				duration: '0.2s',
-				timingFunction: 'cubic-bezier(0,0,0.25,1)'
+				timingFunction: 'cubic-bezier(0,0,0.25,1)',
+				trigger: 30
 			}, conf || {});
 
 			css(self.content, {
@@ -197,14 +181,14 @@
 			} else
 			// if panel is closed
 			if ( !self.state ) {
-				if ( self.current_x > 50 ) {
+				if ( self.current_x > conf.trigger ) {
 					self.open();
 				} else {
 					self.close();
 				}
 			// else panel is opened
 			} else {
-				if ( self.current_x < (conf.slide - 50) ) {
+				if ( self.current_x < (conf.slide - conf.trigger) ) {
 					self.close();
 				} else {
 					self.open();
