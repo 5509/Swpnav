@@ -1,13 +1,13 @@
 /**
  * Swpnav
  *
- * @version      0.2.1
+ * @version      0.2.2
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/Swpnav
  *
- * 2011-12-21 12:44
+ * 2012-01-05 21:43
  */
 ;(function(window, document, undefined) {
 
@@ -247,9 +247,9 @@
 		destroy: function() {
 			var self = this;
 
-			self.content.removeevListener(touchStartev, self);
-			self.content.removeevListener(touchMoveev, self);
-			self.content.removeevListener(touchEndev, self);
+			self.content.removeEventListener(touchStartev, self);
+			self.content.removeEventListener(touchMoveev, self);
+			self.content.removeEventListener(touchEndev, self);
 		}
 	};
 
