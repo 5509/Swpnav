@@ -1,13 +1,13 @@
 /**
  * Swpnav
  *
- * @version      0.2.2
+ * @version      0.3
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/Swpnav
  *
- * 2012-01-05 21:43
+ * 2012-01-11 20:30
  */
 ;(function(window, document, undefined) {
 
@@ -33,13 +33,18 @@
 			var self = this,
 				content_style = undefined;
 
-			self.content = document.querySelector(content);
+			if ( 'jQuery' in window ) {
+				self.content = content;
+			} else {
+				self.content = document.querySelector(content);
+			}
 			self.nav = document.querySelector(nav);
 			self.state = false; // true: open, false: close
 			self.touch_enabled = true;
 			self.current_point = 0;
 			self.current_x = 0;
 			self.max_x = self.content.offsetWidth;
+			self.disabled = false;
 
 			content_style = getComputedStyle(self.content);
 
@@ -94,7 +99,7 @@
 		_touchstart: function(ev) {
 			var self = this;
 
-			if ( !self.touch_enabled ) {
+			if ( !self.touch_enabled || self.disabled ) {
 				return;
 			}
 
@@ -218,9 +223,28 @@
 			}, self.ms_duration + 10);
 		},
 
+		setSlide: function(slide) {
+			var self = this;
+			self.conf.slide = slide;
+		},
+
+		enable: function() {
+			var self = this;
+			self.disabled = false;
+		},
+
+		disable: function() {
+			var self = this;
+			self.disabled = true;
+		},
+
 		open: function() {
 			var self = this,
 				conf = self.conf;
+
+			if ( self.disabled ) {
+				return;
+			}
 
 			css(self.content, {
 				webkitTransitionDuration: conf.duration,
@@ -234,6 +258,10 @@
 		close: function() {
 			var self = this,
 				conf = self.conf;
+
+			if ( self.disabled ) {
+				return;
+			}
 
 			css(self.content, {
 				webkitTransitionDuration: conf.duration,
@@ -279,5 +307,12 @@
 	}
 
 	window.Swpnav = Swpnav;
+
+	if ( !('jQuery' in window) ) {
+		return;
+	}
+	jQuery.fn.swpnav = function(nav, conf) {
+		return Swpnav(this[0], nav, conf);
+	};
 
 }(this, this.document));
