@@ -20,7 +20,7 @@
 		touch_end_event = support.touch ? 'touchend' : 'mouseup';
 
 	var Swpnav = function(content, nav, conf) {
-		this.namespace = 'swpnav';
+		this.namespace = 'Swpnav';
 		if ( this instanceof Swpnav ) {
 			return this.init(content, nav, conf);
 		}
