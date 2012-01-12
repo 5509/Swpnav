@@ -226,7 +226,6 @@
 
 		getState: function() {
 			var self = this;
-			console.log(self.state);
 			return self.state;
 		},
 
