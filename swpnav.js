@@ -1,13 +1,13 @@
 /**
  * Swpnav
  *
- * @version      0.4.1
+ * @version      0.5
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/Swpnav
  *
- * 2012-01-12 16:49
+ * 2012-01-12 17:07
  */
 ;(function(window, document, undefined) {
 
@@ -224,6 +224,12 @@
 			}, self.ms_duration + 10);
 		},
 
+		getState: function() {
+			var self = this;
+			console.log(self.state);
+			return self.state;
+		},
+
 		setSlide: function(slide) {
 			var self = this;
 			self.conf.slide = slide;
@@ -312,26 +318,17 @@
 			namespace = toFirstLetterLowerCase(obj.namespace),
 			method_name = undefined;
 		for ( c in obj ) {
-			if ( (c !== 'state' && typeof obj[c] !== 'function')
+			if ( typeof obj[c] !== 'function'
 			  || /(?:^_)|(?:^handleEvent$)|(?:^init$)/.test(c) ) {
 				continue;
 			}
 			method_name = namespace + toFirstLetterUpperCase(c);
-			if ( typeof obj[c] === 'function' ) {
-				base[method_name] = (function() {
-					var p = c;
-					return function(arguments) {
-						obj[p](arguments);
-					}
-				}());
-			} else {
-				base[method_name] = (function() {
-					var p = c;
-					return function() {
-						return obj[p];
-					}
-				}());
-			}
+			base[method_name] = (function() {
+				var p = c;
+				return function(arguments) {
+					return obj[p](arguments);
+				}
+			}());
 		}
 	}
 

@@ -81,8 +81,7 @@
 	open.on('click', function(ev) {
 		ev.preventDefault();
 
-		console.log(swp.swpnavState());
-		if ( swp.swpnavState() ) {
+		if ( swp.swpnavGetState() ) {
 			swp.swpnavClose();
 		} else {
 			swp.swpnavOpen();
@@ -95,7 +94,6 @@
         point: 3
     });
 
-	window.swp = swp;
 }(jQuery));
 </script>
 

@@ -79,7 +79,7 @@
 	open.addEventListener('click', function(ev) {
 		ev.preventDefault();
 
-		if ( swp.state ) {
+		if ( swp.getState() ) {
 			swp.close();
 		} else {
 			swp.open();
