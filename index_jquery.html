@@ -81,10 +81,11 @@
 	open.on('click', function(ev) {
 		ev.preventDefault();
 
-		if ( swp.state ) {
-			swp.close();
+		console.log(swp.swpnavState());
+		if ( swp.swpnavState() ) {
+			swp.swpnavClose();
 		} else {
-			swp.open();
+			swp.swpnavOpen();
 		}
 	});
 

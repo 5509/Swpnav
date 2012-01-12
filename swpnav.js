@@ -1,13 +1,13 @@
 /**
  * Swpnav
  *
- * @version      0.4
+ * @version      0.4.1
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/Swpnav
  *
- * 2012-01-12 15:50
+ * 2012-01-12 16:49
  */
 ;(function(window, document, undefined) {
 
@@ -312,24 +312,33 @@
 			namespace = toFirstLetterLowerCase(obj.namespace),
 			method_name = undefined;
 		for ( c in obj ) {
-			if ( typeof obj[c] !== 'function'
-			  || /(^_)|(^handleEvent$)|(^init$)/.test(c) ) {
+			if ( (c !== 'state' && typeof obj[c] !== 'function')
+			  || /(?:^_)|(?:^handleEvent$)|(?:^init$)/.test(c) ) {
 				continue;
 			}
 			method_name = namespace + toFirstLetterUpperCase(c);
-			base[method_name] = (function() {
-				var p = c;
-				return function(arguments) {
-					obj[p](arguments);
-				}
-			})();
+			if ( typeof obj[c] === 'function' ) {
+				base[method_name] = (function() {
+					var p = c;
+					return function(arguments) {
+						obj[p](arguments);
+					}
+				}());
+			} else {
+				base[method_name] = (function() {
+					var p = c;
+					return function() {
+						return obj[p];
+					}
+				}());
+			}
 		}
 	}
 
 	function toFirstLetterUpperCase(string) {
 		return string.replace(
 			/(^[a-z])/,
-			function ( $1 ) {
+			function($1) {
 				return $1.toUpperCase();
 			}
 		);
@@ -337,8 +346,8 @@
 
 	function toFirstLetterLowerCase(string) {
 		return string.replace(
-			/(^[a-z])/,
-			function ( $1 ) {
+			/(^[A-Z])/,
+			function($1) {
 				return $1.toLowerCase();
 			}
 		);
