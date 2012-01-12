@@ -1,13 +1,13 @@
 /**
  * Swpnav
  *
- * @version      0.3
+ * @version      0.4
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/Swpnav
  *
- * 2012-01-11 20:30
+ * 2012-01-12 15:50
  */
 ;(function(window, document, undefined) {
 
@@ -20,6 +20,7 @@
 		touch_end_event = support.touch ? 'touchend' : 'mouseup';
 
 	var Swpnav = function(content, nav, conf) {
+		this.namespace = 'swpnav';
 		if ( this instanceof Swpnav ) {
 			return this.init(content, nav, conf);
 		}
@@ -275,9 +276,9 @@
 		destroy: function() {
 			var self = this;
 
-			self.content.removeEventListener(touchStartev, self);
-			self.content.removeEventListener(touchMoveev, self);
-			self.content.removeEventListener(touchEndev, self);
+			self.content.removeEventListener(touch_start_event, self);
+			self.content.removeEventListener(touch_move_event, self);
+			self.content.removeEventListener(touch_end_event, self);
 		}
 	};
 
@@ -306,13 +307,55 @@
 		return base;
 	}
 
+	function extend_method(base, obj) {
+		var c = undefined,
+			namespace = toFirstLetterLowerCase(obj.namespace),
+			method_name = undefined;
+		for ( c in obj ) {
+			if ( typeof obj[c] !== 'function'
+			  || /(^_)|(^handleEvent$)|(^init$)/.test(c) ) {
+				continue;
+			}
+			method_name = namespace + toFirstLetterUpperCase(c);
+			base[method_name] = (function() {
+				var p = c;
+				return function(arguments) {
+					obj[p](arguments);
+				}
+			})();
+		}
+	}
+
+	function toFirstLetterUpperCase(string) {
+		return string.replace(
+			/(^[a-z])/,
+			function ( $1 ) {
+				return $1.toUpperCase();
+			}
+		);
+	}
+
+	function toFirstLetterLowerCase(string) {
+		return string.replace(
+			/(^[a-z])/,
+			function ( $1 ) {
+				return $1.toLowerCase();
+			}
+		);
+	}
+
 	window.Swpnav = Swpnav;
 
 	if ( !('jQuery' in window) ) {
 		return;
 	}
 	jQuery.fn.swpnav = function(nav, conf) {
-		return Swpnav(this[0], nav, conf);
+		var swpnav = Swpnav(this[0], nav, conf),
+			c = undefined;
+
+		extend_method(this, swpnav);
+
+		return this;
 	};
 
 }(this, this.document));
