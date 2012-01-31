@@ -359,7 +359,6 @@
 
 		destroy: function() {
 			var self = this;
-			console.log('hogehogehgoegho');
 			self.destroyed = true;
 
 			if ( add_event ) {
