@@ -18,6 +18,7 @@
 	</header>
 
 	<div class="main">
+		<p><a href="#destory" id="destory">destory Swpnav</a></p>
 		<p><a href="http://ja.wikipedia.org/wiki/Lorem_ipsum">Lorem ipsum</a> dolor sit amet, consectetur adipiscing elit. Fusce augue nulla, rhoncus sed faucibus sit amet, sagittis at metus. Mauris tristique dui eget turpis interdum ultricies. Donec volutpat, velit a congue convallis, nisi est ultricies tortor, sed pretium eros enim nec lorem. Pellentesque iaculis, felis ac interdum tincidunt, tortor lacus ultrices nisl, ut porta magna enim eu nunc. Cras nec vehicula arcu. Nunc bibendum, quam eu dignissim posuere, orci est sodales ante, non rhoncus tortor lorem nec ante. Donec tellus urna, porta eget tincidunt id, elementum quis sapien. Curabitur cursus, libero in mollis feugiat, augue ante laoreet massa, a consequat orci orci a diam. Pellentesque condimentum, libero a mattis suscipit, ipsum ante feugiat neque, sed pellentesque tellus mi vel nisi. Fusce sit amet adipiscing tellus.</p>
 		<p>Fusce tellus purus, porttitor eu porta ac, suscipit ac nunc. Morbi sed eros ac diam egestas consectetur sit amet eget purus. Phasellus mattis diam ut mi eleifend varius. Suspendisse potenti. Mauris nec venenatis ligula. Suspendisse nisi sem, ultrices eu euismod quis, tempus in est. Sed ac turpis quam, et facilisis justo. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Cras aliquet, felis ac gravida cursus, arcu nisl tempus lacus, eget suscipit diam lacus in ante. Sed dui elit, pulvinar sed vehicula non, tristique in velit. Duis nec sem nec risus venenatis commodo in a felis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Duis lacinia purus ac dolor viverra vitae scelerisque urna luctus. Vivamus ornare quam id ante consequat eu egestas justo egestas. Cras lacinia nibh at quam venenatis mollis. Quisque facilisis, leo vitae rutrum lobortis, nibh elit volutpat nisl, scelerisque viverra velit ipsum facilisis lectus.</p>
 		<p>Sed vitae orci et orci venenatis condimentum ac in erat. Pellentesque vel porta neque. In hac habitasse platea dictumst. Nunc in varius velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vestibulum a nulla lacus, quis blandit nunc. Suspendisse in sollicitudin diam. Morbi posuere mi non nunc semper volutpat. In id massa vitae sapien eleifend pellentesque eget id tellus. Ut ultricies risus sed dui fermentum elementum. Suspendisse bibendum turpis et metus lobortis elementum. Morbi eu enim non neque cursus dignissim a non lacus.</p>
@@ -37,20 +38,32 @@
 	</ul>
 </nav>
 
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script src="swpnav.js"></script>
 <script>
-	var open = document.getElementById('open'),
-		swp = Swpnav('#content', '#nav');
+(function($) {
+	var open = $('#open'),
+		swp = $('#content').swpnav('#nav'),
+		destory = $('#destory');
 
-	open.addEventListener('click', function(ev) {
+	open.on('click', function(ev) {
 		ev.preventDefault();
 
-		if ( swp.getState() ) {
-			swp.close();
+		if ( swp.swpnavGetState() ) {
+			swp.swpnavClose();
 		} else {
-			swp.open();
+			swp.swpnavOpen();
 		}
-	}, false);
+	});
+
+	destory.on('click', function(ev) {
+		ev.preventDefault();
+
+		swp.swpnavDestroy();
+		alert('destoryed');
+	});
+}(jQuery));
 </script>
 
 </body>

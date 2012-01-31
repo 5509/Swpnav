@@ -1,44 +1,53 @@
 /**
  * Swpnav
  *
- * @version      0.5
+ * @version      1.0
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/Swpnav
  *
- * 2012-01-12 17:07
+ * 2012-01-31 1:21
  */
 ;(function(window, document, undefined) {
 
-	var support = {
-			translate3d: ('WebKitCSSMatrix' in window && 'm11' in new WebKitCSSMatrix()),
-			prefix: (function() {
-				var prefixes = [
-						'transform',
-						'WebkitTransform',
-						'MozTransform',
-						'OTransform',
-						'msTransform'
-					],
-					prefix = undefined,
-					el = document.createElement('div'),
-					support = 0;
+	var support = {};
+	support.css =(function() {
+		var set_prefix = function(prop) {
+			var upper_prop = toFirstLetterUpperCase(prop);
+			var prefixes = [
+					prop,
+					'Webkit' + upper_prop,
+					'Moz' + upper_prop,
+					'O' + upper_prop,
+					'ms' + upper_prop
+				],
+				properties = ['', '-webkit-', '-moz-', '-o-', '-ms-'],
+				el = document.createElement('div'),
+				i = 0, l = prefixes.length;
 
-				while ( support !== true ) {
-					prefix = prefixes[support++];
-					support = typeof el.style[prefix] !== 'undefined' || support;
+			for ( ; i < l; i++ ) {
+				if ( typeof el.style[prefixes[i]] === 'undefined' ) continue;
+				return {
+					prefix: prefixes[i],
+					prop: properties[i]
 				}
-				return prefix;
-			}()),
-			touch: ('ontouchstart' in window)
-		},
+			}
+			return undefined;
+		};
+		return {
+			transform: set_prefix('transform'),
+			transition: set_prefix('transition')
+		};
+	}());
+	support.touch = ('ontouchstart' in window);
+
+	var add_event = 'addEventListener' in window,
 		touch_start_event = support.touch ? 'touchstart' : 'mousedown',
 		touch_move_event = support.touch ? 'touchmove' : 'mousemove',
 		touch_end_event = support.touch ? 'touchend' : 'mouseup';
 
-	console.log(support.prefix);
-
+	// Swpnav
 	var Swpnav = function(content, nav, conf) {
 		this.namespace = 'Swpnav';
 		if ( this instanceof Swpnav ) {
@@ -54,8 +63,6 @@
 			var self = this,
 				content_style = undefined;
 
-			console.log('init');
-
 			if ( 'jQuery' in window ) {
 				self.content = content;
 			} else {
@@ -68,12 +75,11 @@
 			self.current_x = 0;
 			self.max_x = self.content.offsetWidth;
 			self.disabled = false;
+			self.destroyed = false;
 
 			if ( 'currentStyle' in self.content ) {
-				console.log('currentStyle');
 				content_style = self.content.currentStyle;
 			} else {
-				console.log('getComputedStyle');
 				content_style = getComputedStyle(self.content);
 			}
 
@@ -90,18 +96,45 @@
 				trigger: 30
 			}, conf || {});
 
-			css(self.content, {
-				webkitTransitionProperty: '-webkit-transform',
-				webkitTransitionTimingFunction: self.conf.timingFunction,
-				webkitTransitionDuration: 0,
-				webkitTransform: translate(0)
-			});
+			if ( support.css.transform && support.css.transition ) {
+				self.transition = true;
+				self.ts = support.css.transition;
+				self.tf = support.css.transform;
+				self.content.style[self.ts.prefix + 'Property'] = self.ts.prop + 'transform';
+				self.content.style[self.ts.prefix + 'TimingFunction'] = self.conf.timingFunction;
+				self.content.style[self.ts.prefix + 'Duration'] = 0;
+				self.content.style[self.tf.prefix + 'Style'] = 'preserve-3d';
+				self.content.style[self.tf.prefix] = translate(0);
+			} else {
+				self.transition = false;
+				if ( !/absolute|relative/.test(content_style.position) ) {
+					self.content.style.position = 'relative';
+				}
+			}
 
 			self.ms_duration = parseFloat(self.conf.duration) * 1000;
 
-			self.content.addEventListener(touch_start_event, self, false);
-			self.content.addEventListener(touch_move_event, self, false);
-			self.content.addEventListener(touch_end_event, self, false);
+			if ( add_event ) {
+				self.content.addEventListener(touch_start_event, self, false);
+				self.content.addEventListener(touch_move_event, self, false);
+				self.content.addEventListener(touch_end_event, self, false);
+			} else {
+				self.handledStart = handle_event(
+					self.content,
+					touch_start_event,
+					function(ev) { self._touchstart(ev); }
+				);
+				self.handledMove = handle_event(
+					self.content,
+					touch_move_event,
+					function(ev) { self._touchmove(ev); }
+				);
+				self.handledEnd = handle_event(
+					self.content,
+					touch_end_event,
+					function(ev) { self._touchend(ev); }
+				);
+			}
 
 			return self;
 		},
@@ -133,7 +166,11 @@
 			}
 
 			if ( !support.touch ) {
-				ev.preventDefault();
+				if ( add_event ) {
+					ev.preventDefault();
+				} else {
+					ev.returnValue = false;
+				}
 			}
 
 			self.scrolling = true;
@@ -146,7 +183,6 @@
 		},
 
 		_touchmove: function(ev) {
-
 			var self = this,
 				page_x = undefined,
 				page_y = undefined,
@@ -163,8 +199,13 @@
 			page_y = get_page(ev, 'pageY');
 
 			if ( self.move_ready ) {
-				ev.preventDefault();
-				ev.stopPropagation();
+				if ( add_event ) {
+					ev.preventDefault();
+					ev.stopPropagation();
+				} else {
+					ev.returnValue = false;
+					ev.cancelBubble = true;
+				}
 
 				dist_x = page_x - self.base_page_x;
 				new_x = self.current_x + dist_x;
@@ -177,20 +218,25 @@
 				}
 
 				self.current_x = new_x;
-				css(self.content, {
-					webkitTransform: translate(new_x)
-				});
+				if ( self.transition ) {
+					self.content.style[self.tf.prefix] = translate(new_x);
+				} else {
+					self.content.style.left = new_x + 'px';
+				}
 
 				self.direction_x = dist_x > 0 ? -1 : 1;
 			} else {
 				delta_x = Math.abs(page_x - self.start_page_x);
 				delta_y = Math.abs(page_y - self.start_page_y);
 				if ( delta_x > 5 ) {
-					ev.preventDefault();
-					ev.stopPropagation();
+					if ( add_event ) {
+						ev.preventDefault();
+						ev.stopPropagation();
+					} else {
+						ev.returnValue = false;
+						ev.cancelBubble = true;
+					}
 					self.move_ready = true;
-
-					self.content.addEventListener('click', self, true);
 				} else
 				if ( delta_y > 5 ) {
 					self.scrolling = false;
@@ -228,25 +274,26 @@
 					self.open();
 				}
 			}
-
-			setTimeout(function() {
-				self.content.removeEventListener('click', self, true);
-			}, 200);
 		},
 
 		_click: function(ev) {
 			var self = this;
 
-			ev.stopPropagation();
-			ev.preventDefault();
+			if ( add_event ) {
+				ev.preventDefault();
+				ev.stopPropagation();
+			} else {
+				ev.returnValue = false;
+				ev.cancelBubble = true;
+			}
 		},
 
 		_setNoAnim: function(state) {
 			var self = this;
 			setTimeout(function() {
-				css(self.content, {
-					webkitTransitionDuration: '0s'
-				});
+				if ( self.transition ) {
+					self.content.style[self.ts.prefix + 'Duration'] = '0s';
+				}
 
 				self.state = state;
 			}, self.ms_duration + 10);
@@ -276,15 +323,17 @@
 			var self = this,
 				conf = self.conf;
 
-			if ( self.disabled ) {
+			if ( self.disabled || self.destroyed ) {
 				return;
 			}
 
-			css(self.content, {
-				webkitTransitionDuration: conf.duration,
-				webkitTransform: translate(conf.slide)
-			});
-			
+			if ( self.transition ) {
+				self.content.style[self.ts.prefix + 'Duration'] = conf.duration;
+				self.content.style[self.tf.prefix] = translate(conf.slide);
+			} else {
+				self.content.style.left = conf.slide + 'px';
+			}
+
 			self.current_x = conf.slide;
 			self._setNoAnim(true);
 		},
@@ -293,14 +342,16 @@
 			var self = this,
 				conf = self.conf;
 
-			if ( self.disabled ) {
+			if ( self.disabled || self.destroyed ) {
 				return;
 			}
 
-			css(self.content, {
-				webkitTransitionDuration: conf.duration,
-				webkitTransform: translate(0)
-			});
+			if ( self.transition ) {
+				self.content.style[self.ts.prefix + 'Duration'] = conf.duration;
+				self.content.style[self.tf.prefix] = translate(0);
+			} else {
+				self.content.style.left = '0px';
+			}
 
 			self.current_x = 0;
 			self._setNoAnim(false);
@@ -308,12 +359,30 @@
 
 		destroy: function() {
 			var self = this;
+			console.log('hogehogehgoegho');
+			self.destroyed = true;
 
-			self.content.removeEventListener(touch_start_event, self);
-			self.content.removeEventListener(touch_move_event, self);
-			self.content.removeEventListener(touch_end_event, self);
+			if ( add_event ) {
+				self.content.removeEventListener(touch_start_event, self, false);
+				self.content.removeEventListener(touch_move_event, self, false);
+				self.content.removeEventListener(touch_end_event, self, false);
+			} else {
+				self.handledStart.detach();
+				self.handledMove.detach();
+				self.handledEnd.detach();
+			}
 		}
 	};
+
+	function handle_event(elem, listener, func) {
+		var _func = func;
+		elem.attachEvent('on' + listener, _func);
+		return {
+			detach: function() {
+				elem.detachEvent('on' + listener, _func);
+			}
+		}
+	}
 
 	function css(elem, styles) {
 		var c = undefined;
@@ -323,12 +392,29 @@
 	}
 
 	function translate(x) {
-		return (support.translate3d) ? 'translate3d(' + x + 'px, 0, 0)'
-			: 'translate(' + x + 'px, 0)';
+		return 'translate(' + x + 'px, 0)';
 	}
 
 	function get_page(ev, page) {
-		return support.touch ? ev.changedTouches[0][page] : ev[page];
+		var page_pos = undefined,
+			b = document.body,
+			dE = document.documentElement;
+		// mobile
+		if ( support.touch ) {
+			page_pos = ev.changedTouches[0][page];
+		// except IE8-
+		} else
+		if ( ev[page] ) {
+			page_pos = ev[page];
+		// IE8-
+		} else {
+			if ( page === 'pageX' ) {
+				page_pos = ev.clientX + b.scrollLeft + dE.scrollLeft;
+			} else {
+				page_pos = ev.clientY + b.scrollTop + dE.scrollTop;
+			}
+		}
+		return page_pos;
 	}
 
 	function simple_extend(base, obj) {
