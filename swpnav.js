@@ -13,11 +13,31 @@
 
 	var support = {
 			translate3d: ('WebKitCSSMatrix' in window && 'm11' in new WebKitCSSMatrix()),
+			prefix: (function() {
+				var prefixes = [
+						'transform',
+						'WebkitTransform',
+						'MozTransform',
+						'OTransform',
+						'msTransform'
+					],
+					prefix = undefined,
+					el = document.createElement('div'),
+					support = 0;
+
+				while ( support !== true ) {
+					prefix = prefixes[support++];
+					support = typeof el.style[prefix] !== 'undefined' || support;
+				}
+				return prefix;
+			}()),
 			touch: ('ontouchstart' in window)
 		},
 		touch_start_event = support.touch ? 'touchstart' : 'mousedown',
 		touch_move_event = support.touch ? 'touchmove' : 'mousemove',
 		touch_end_event = support.touch ? 'touchend' : 'mouseup';
+
+	console.log(support.prefix);
 
 	var Swpnav = function(content, nav, conf) {
 		this.namespace = 'Swpnav';
@@ -34,12 +54,14 @@
 			var self = this,
 				content_style = undefined;
 
+			console.log('init');
+
 			if ( 'jQuery' in window ) {
 				self.content = content;
 			} else {
-				self.content = document.querySelector(content);
+				self.content = document.getElementById(content.replace('#',''));
 			}
-			self.nav = document.querySelector(nav);
+			self.nav = document.getElementById(nav.replace('#', ''));
 			self.state = false; // true: open, false: close
 			self.touch_enabled = true;
 			self.current_point = 0;
@@ -47,7 +69,13 @@
 			self.max_x = self.content.offsetWidth;
 			self.disabled = false;
 
-			content_style = getComputedStyle(self.content);
+			if ( 'currentStyle' in self.content ) {
+				console.log('currentStyle');
+				content_style = self.content.currentStyle;
+			} else {
+				console.log('getComputedStyle');
+				content_style = getComputedStyle(self.content);
+			}
 
 			css(self.nav, {
 				position: 'absolute',
