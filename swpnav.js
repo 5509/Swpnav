@@ -91,7 +91,8 @@
         slide: 260,
         duration: '0.2s',
         timingFunction: 'cubic-bezier(0,0,0.25,1)',
-        trigger: 30
+        trigger: 30,
+        no3dRender: false
       }, conf || {});
 
       if ( support.css.transform && support.css.transition ) {
@@ -101,8 +102,10 @@
         self.content.style[self.ts.prefix + 'Property'] = self.ts.prop + 'transform';
         self.content.style[self.ts.prefix + 'TimingFunction'] = self.conf.timingFunction;
         self.content.style[self.ts.prefix + 'Duration'] = 0;
-        self.content.style[self.tf.prefix + 'Style'] = 'preserve-3d';
         self.content.style[self.tf.prefix] = translate(0);
+        if ( !self.conf.no3dRender ) {
+          self.content.style[self.tf.prefix + 'Style'] = 'preserve-3d';
+        }
       } else {
         self.transition = false;
         if ( !/absolute|relative/.test(content_style.position) ) {
