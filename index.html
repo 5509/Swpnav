@@ -57,7 +57,9 @@
 <script src="swpnav.js"></script>
 <script>
 	var open = document.getElementById('open'),
-		swp = Swpnav('#content', '#nav');
+		swp = Swpnav('#content', '#nav', {
+      noTouchDrag: true
+    });
 
 	open.addEventListener('click', function(ev) {
 		ev.preventDefault();

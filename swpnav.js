@@ -92,7 +92,8 @@
         duration: '0.2s',
         timingFunction: 'cubic-bezier(0,0,0.25,1)',
         trigger: 30,
-        no3dRender: false
+        no3dRender: false,
+        noTouchDrag: false
       }, conf || {});
 
       if ( support.css.transform && support.css.transition ) {
@@ -114,6 +115,10 @@
       }
 
       self.ms_duration = parseFloat(self.conf.duration) * 1000;
+
+      if ( self.conf.noTouchDrag ) {
+        return self;
+      }
 
       if ( add_event ) {
         self.content.addEventListener(touch_start_event, self, false);
@@ -142,6 +147,11 @@
 
     handleEvent: function(ev) {
       var self = this;
+      var conf = self.conf;
+
+      if ( conf.noTouchDrag ) {
+        return self;
+      }
 
       switch ( ev.type ) {
       case touch_start_event:
